@@ -390,8 +390,4 @@ Suggestions, issue reports and contributions from the wider community are welcom
 
 ---
 
-<<<<<<< HEAD
 Copyright 2026 William Law II and the SalesCast team. All rights reserved.
-=======
-Copyright 2026 William Law II and the SalesCast team. All rights reserved.
->>>>>>> d880828a1475732fe8a6e2de6c00580508137caa
