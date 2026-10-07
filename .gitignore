@@ -25,6 +25,7 @@ frontend/tsconfig.tsbuildinfo
 .DS_Store
 Thumbs.db
 .vscode/
+.claude/
 
 # Notebooks and BI files (large binaries — regenerate from source)
 *.ipynb
