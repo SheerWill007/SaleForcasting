@@ -119,7 +119,14 @@ export interface DatasetInfo {
   preview: Row[];
 }
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "";
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || "";
+
+if (typeof window !== "undefined" && !API_BASE && !window.location.hostname.includes("localhost")) {
+  console.error(
+    "NEXT_PUBLIC_API_URL is not set. The frontend cannot reach the API in production. " +
+    "Set NEXT_PUBLIC_API_URL to your Render backend URL (e.g., https://your-app.onrender.com) and rebuild."
+  );
+}
 
 type Params = Record<string, string | number | string[] | undefined | null>;
 

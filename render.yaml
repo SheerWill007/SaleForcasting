@@ -1,0 +1,19 @@
+services:
+  - type: web
+    name: salescast-api
+    runtime: python
+    plan: free  # Change to 'starter' or higher for production
+    region: oregon  # Choose your preferred region
+    rootDir: backend
+    buildCommand: pip install --upgrade pip && pip install -r requirements.txt
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.12.0
+      - key: SF_CORS_ORIGINS
+        sync: false  # Set this manually in Render dashboard to include your Vercel URL
+      - key: SF_DATA_DIR
+        value: data
+      - key: SF_MODEL_DIR
+        value: models
+    healthCheckPath: /api/health

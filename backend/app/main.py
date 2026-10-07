@@ -2,6 +2,9 @@
 
 Run from the `backend/` folder:
     uvicorn app.main:app --reload
+
+For production (Render):
+    uvicorn app.main:app --host 0.0.0.0 --port $PORT
 """
 from __future__ import annotations
 
@@ -34,6 +37,7 @@ app = FastAPI(title="Sales Forecasting API", version="1.0.0", lifespan=lifespan)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=config.CORS_ORIGINS,
+    allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
