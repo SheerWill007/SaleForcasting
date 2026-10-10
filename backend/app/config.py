@@ -14,7 +14,7 @@ SAMPLE_DATASET = DATA_DIR / "superstore_dataset.csv"
 UPLOAD_DIR = DATA_DIR / "uploads"
 MODEL_PATH = MODEL_DIR / "model.joblib"
 
-MAX_UPLOAD_MB = 25
+MAX_UPLOAD_MB = int(os.getenv("SF_MAX_UPLOAD_MB", "350"))
 CORS_ORIGINS = [o.strip() for o in os.getenv("SF_CORS_ORIGINS", "http://localhost:3000").split(",") if o.strip()]
 
 # Port for production deployment (Render sets this automatically)

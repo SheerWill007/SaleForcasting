@@ -82,7 +82,7 @@ export default function DataPage() {
                   </svg>
                 </span>
                 <strong>Drop a file or click to browse</strong>
-                <span>.xlsx or .csv, up to 25 MB</span>
+                <span>.xlsx or .csv, up to 350 MB</span>
                 <input
                   ref={input}
                   type="file"

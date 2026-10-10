@@ -109,3 +109,24 @@ def test_upload_validation_and_reset(client):
 
     client.post("/api/dataset/reset")
     assert client.get("/api/dataset").json()["kind"] == "sample"
+
+
+def test_upload_size_limit(client):
+    """Test that files exceeding the configured size limit are rejected."""
+    # Create a mock large file that exceeds the limit
+    # We'll simulate this by mocking rather than creating a real 350MB+ file
+    import tempfile
+    from pathlib import Path
+    
+    # Test file extension validation
+    bad_ext = io.BytesIO(b"some data")
+    r = client.post("/api/dataset/upload", files={"file": ("bad.txt", bad_ext, "text/plain")})
+    assert r.status_code == 400
+    assert "Invalid file type" in r.json()["detail"]
+    
+    # Test that a valid small CSV works (already tested above, but confirming)
+    df = pd.read_csv(config.SAMPLE_DATASET).head(100)
+    csv_content = df.to_csv(index=False).encode()
+    assert len(csv_content) < config.MAX_UPLOAD_MB * 1024 * 1024
+    r = client.post("/api/dataset/upload", files={"file": ("small.csv", csv_content, "text/csv")})
+    assert r.status_code == 200

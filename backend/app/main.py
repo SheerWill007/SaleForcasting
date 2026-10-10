@@ -100,13 +100,43 @@ def dataset_info() -> dict[str, Any]:
 
 @app.post("/api/dataset/upload")
 async def upload_dataset(file: UploadFile = File(...)) -> dict[str, Any]:
-    content = await file.read()
-    if len(content) > config.MAX_UPLOAD_MB * 1024 * 1024:
-        raise HTTPException(413, f"File too large (max {config.MAX_UPLOAD_MB} MB)")
+    """Upload and process a dataset file with streaming support for large files."""
+    import tempfile
+    from pathlib import Path as TempPath
+    
+    # Validate extension first
+    filename = file.filename or "upload.csv"
+    ext = TempPath(filename).suffix.lower()
+    if ext not in (".csv", ".xlsx", ".xls"):
+        raise HTTPException(400, "Invalid file type. Upload a .csv or .xlsx file.")
+    
+    # Stream file to temporary location with size limit enforcement
+    max_bytes = config.MAX_UPLOAD_MB * 1024 * 1024
+    bytes_read = 0
+    
+    temp_fd, temp_path = tempfile.mkstemp(suffix=ext, prefix="upload_")
+    temp_file = TempPath(temp_path)
+    
     try:
-        state.upload(content, file.filename or "upload.csv")
+        with open(temp_fd, "wb") as f:
+            # Stream in chunks to avoid loading entire file into memory
+            while chunk := await file.read(8192):  # 8KB chunks
+                bytes_read += len(chunk)
+                if bytes_read > max_bytes:
+                    raise HTTPException(413, f"File too large (max {config.MAX_UPLOAD_MB} MB)")
+                f.write(chunk)
+        
+        # Read the content for processing
+        content = temp_file.read_bytes()
+        state.upload(content, filename)
+        
     except DatasetError as exc:
         raise HTTPException(422, str(exc)) from exc
+    finally:
+        # Clean up temporary file
+        if temp_file.exists():
+            temp_file.unlink()
+    
     return {"dataset": dataset_info(), "metrics": state.bundle["metrics"]}
 
 

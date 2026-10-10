@@ -195,6 +195,7 @@ All configuration is supplied through environment variables. Every variable has 
 
 | Variable | Component | Default | Description |
 |---|---|---|---|
+| `SF_MAX_UPLOAD_MB` | Backend | `350` | Maximum dataset upload size in megabytes. Set to a lower value if hosting has memory constraints. |
 | `SF_DATA_DIR` | Backend | `backend/data/` | Directory containing the sample dataset and the `uploads/` subdirectory. Override this to relocate data, for example onto a mounted volume. |
 | `SF_MODEL_DIR` | Backend | `backend/models/` | Directory in which the trained model is persisted. |
 | `SF_FRONTEND_DIST` | Backend | `frontend/out/` | Location of the static frontend build to be served by FastAPI. In the Docker image this is set to `/app/frontend/out`. |
@@ -206,6 +207,7 @@ A suggested `.env.example` for local configuration:
 
 ```bash
 # Backend
+SF_MAX_UPLOAD_MB=350
 SF_DATA_DIR=backend/data
 SF_MODEL_DIR=backend/models
 SF_FRONTEND_DIST=frontend/out
@@ -246,7 +248,18 @@ In development, the Swagger interface is reachable through the frontend origin (
 
 ## 11. Data Requirements
 
-The application accepts tabular sales data in CSV format. The dataset must contain the required columns and may contain a number of optional columns that enable additional analytics. Uploaded files are validated on receipt, and the API returns a descriptive error when a required column is missing. The authoritative column definitions are published in the OpenAPI documentation at `/docs` for the upload endpoint.
+The application accepts tabular sales data in CSV or Excel format. The dataset must contain the required columns and may contain a number of optional columns that enable additional analytics. Uploaded files are validated on receipt, and the API returns a descriptive error when a required column is missing. The authoritative column definitions are published in the OpenAPI documentation at `/docs` for the upload endpoint.
+
+**Upload Limits:**
+- Maximum file size: 350 MB (configurable via `SF_MAX_UPLOAD_MB` environment variable)
+- Supported formats: CSV (.csv), Excel (.xlsx, .xls)
+- Files are streamed to temporary storage during upload to avoid memory issues
+- Large datasets (>100 MB) may take longer to process during model retraining
+
+**Memory Considerations:**
+- A 350 MB CSV file can consume 1-2 GB of RAM after parsing with pandas
+- For production deployments with limited memory, consider reducing `SF_MAX_UPLOAD_MB`
+- Free tier hosting may have memory constraints that prevent processing very large files
 
 Uploaded datasets are stored in `backend/data/uploads/` (or the `uploads/` directory beneath `SF_DATA_DIR`), which is intentionally separate from the bundled sample data.
 
